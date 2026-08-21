@@ -4,7 +4,6 @@ import { getMenu } from "@/lib/menu";
 import { getStore } from "@/lib/store";
 import { Icon } from "@/components/Icon";
 import { MenuClient } from "@/components/MenuClient";
-import { Monogram } from "@/components/Monogram";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +31,8 @@ export default async function MenuPage() {
             <Image src={store.logoUrl} alt={store.name} fill sizes="80px" className="object-cover" />
           </div>
         ) : (
-          <Monogram name={store.name} className="mx-auto mb-4 h-20 w-20 text-3xl" />
+          // marca da casa: mantido de propósito, é o único emoji da interface
+          <span className="animate-float mb-2 block text-5xl">🍔</span>
         )}
 
         <h1 className="display text-4xl text-cream sm:text-5xl">{store.name}</h1>

@@ -37,7 +37,7 @@ Nunca introduza `storeId` nas consultas: existe uma única `Store` (id = 1).
 ## Interface
 
 - Texto de interface **em português do Brasil**, na linguagem do dono de lanchonete — evite jargão técnico.
-- Ícones: só `src/components/Icon.tsx` (SVG em traço, `currentColor`). **Nunca use emoji na interface** — passa impressão de sistema amador.
+- Ícones: só `src/components/Icon.tsx` (SVG em traço, `currentColor`). **Não use emoji na interface** — passa impressão de sistema amador. Única exceção deliberada: o 🍔 no topo do cardápio, quando a loja ainda não subiu logo — é a marca da casa, mantenha.
 - Tema no `@theme` de `src/app/globals.css`: `ink`/`surface` (preto), `flame`/`ember` (laranja), `cream` (branco), `score-high|mid|low` (notas). Use os tokens, não hex solto.
 - Títulos usam a utilidade `display` (fonte Anton, caixa alta). Corpo em Inter.
 - **Mobile-first**: o cardápio é usado no celular, na mesa. Alvos de toque grandes, nada essencial fora do alcance do polegar.
