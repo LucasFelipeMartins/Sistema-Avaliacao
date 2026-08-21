@@ -1,5 +1,11 @@
 # Cardápio Digital com Avaliações
 
+![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+
 Sistema de cardápio por QR Code para hamburguerias, com **notas de 0 a 10 dadas pelos
 próprios clientes** e painel administrativo para o dono.
 
@@ -154,3 +160,11 @@ src/components/             cartões, folha de avaliação, formulários do pain
 src/lib/                    prisma, sessão, upload, e-mail, formatação
 src/app/globals.css         tema, tipografia e animações
 ```
+
+---
+
+## Licença
+
+Projeto proprietário — todos os direitos reservados a Lucas Felipe Martins.
+O código não é livre para redistribuição; cada instalação é licenciada ao
+estabelecimento que a contrata.
