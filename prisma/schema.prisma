@@ -1,0 +1,86 @@
+// Cardápio Digital + Avaliações — uma instalação por estabelecimento.
+// Banco SQLite local: cada cliente que compra o sistema roda seu próprio banco.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Dados do estabelecimento + credenciais do painel admin.
+/// Sempre existe uma única linha (id = 1).
+model Store {
+  id           Int      @id @default(1)
+  name         String   @default("Minha Hamburgueria")
+  tagline      String   @default("O melhor lanche da cidade")
+  logoUrl      String?
+  phone        String?
+  whatsapp     String?
+  instagram    String?
+  address      String?
+  openingHours String?
+  adminEmail   String
+  passwordHash String
+  publicUrl    String? // usada para gerar o QR Code
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  position Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String
+  ingredients String    @default("")
+  priceCents  Int       @default(0)
+  imageUrl    String?
+  available   Boolean   @default(true)
+  featured    Boolean   @default(false)
+  position    Int       @default(0)
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  reviews     Review[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+}
+
+/// Nota de 0 a 10 dada pelo cliente. Um voto por aparelho por lanche
+/// (o cliente pode trocar a própria nota, mas não votar duas vezes).
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  deviceId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, deviceId])
+  @@index([productId])
+}
+
+/// Sessão do painel admin (token aleatório guardado em cookie httpOnly).
+model Session {
+  tokenHash String   @id
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+/// Token de recuperação de senha enviado por e-mail.
+model PasswordReset {
+  tokenHash String    @id
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+}

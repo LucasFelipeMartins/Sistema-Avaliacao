@@ -1,26 +1,165 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Cardápio Digital — tema preto / laranja / branco
+   ============================================================ */
+@theme {
+  /* Superfícies */
+  --color-ink: #0a0a0b;
+  --color-surface: #141417;
+  --color-surface-2: #1c1c21;
+  --color-line: #2a2a31;
+
+  /* Laranja da marca */
+  --color-flame: #ff6a00;
+  --color-ember: #ff9d2e;
+  --color-char: #7a2e00;
+
+  /* Texto */
+  --color-cream: #f8f5f0;
+  --color-muted: #a1a1aa;
+  --color-faint: #71717a;
+
+  /* Notas */
+  --color-score-high: #4ade80;
+  --color-score-mid: #ffb020;
+  --color-score-low: #f87171;
+
+  /* Tipografia */
+  --font-display: var(--font-anton), "Arial Black", sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Animações */
+  --animate-rise: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-sizzle: sizzle 3.5s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-slide-up: slide-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes sizzle {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-12px) rotate(4deg); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* ------------------------------------------------------------
+   Base
+   ------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  overscroll-behavior-y: none;
+  /* brasa laranja no topo da página */
+  background-image:
+    radial-gradient(90rem 40rem at 50% -18rem, rgba(255, 106, 0, 0.28), transparent 60%),
+    radial-gradient(50rem 30rem at 100% 10%, rgba(255, 157, 46, 0.08), transparent 55%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--color-flame);
+  color: var(--color-ink);
+}
+
+/* ------------------------------------------------------------
+   Utilitários
+   ------------------------------------------------------------ */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@utility safe-bottom {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+
+/* Texto de display com leve compressão, estilo lanchonete */
+@utility display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+/* Cartão de vidro escuro */
+@utility card {
+  background: linear-gradient(180deg, rgba(28, 28, 33, 0.9), rgba(20, 20, 23, 0.9));
+  border: 1px solid var(--color-line);
+  backdrop-filter: blur(12px);
+}
+
+/* Brilho laranja atrás de elementos em destaque */
+@utility glow {
+  box-shadow: 0 0 0 1px rgba(255, 106, 0, 0.35), 0 12px 40px -12px rgba(255, 106, 0, 0.55);
+}
+
+/* Placeholder animado enquanto a foto não carrega */
+@utility shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-surface-2) 0%,
+    #2e2e36 50%,
+    var(--color-surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Scroll suave ao trocar de categoria, respeitando acessibilidade */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   Impressão — usado no cartão de mesa com o QR Code
+   ------------------------------------------------------------ */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .no-print { display: none !important; }
+  .print-card {
+    box-shadow: none !important;
+    border: 2px solid #000 !important;
+    break-inside: avoid;
+  }
 }
