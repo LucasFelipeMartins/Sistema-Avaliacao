@@ -52,9 +52,7 @@ export default async function MenuPage() {
             </span>
           )}
         </div>
-
-        <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-flame/30 bg-flame/10 px-4 py-2 text-[13px] font-medium text-ember">
-          <Icon name="star" filled className="h-4 w-4" />
+        <p className="mt-5 inline-block rounded-full border border-flame/30 bg-flame/10 px-5 py-2 text-center text-[13px] font-medium text-ember">
           As notas são de quem já comeu aqui — avalie você também
         </p>
       </header>
