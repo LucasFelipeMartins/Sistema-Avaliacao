@@ -23,8 +23,8 @@ export function getMyRatings(): Record<string, number> {
   }
 }
 
-export function saveMyRating(productId: number, rating: number) {
+export function saveMyRating(productId: string, rating: number) {
   const all = getMyRatings();
-  all[String(productId)] = rating;
+  all[productId] = rating;
   window.localStorage.setItem(RATINGS_KEY, JSON.stringify(all));
 }

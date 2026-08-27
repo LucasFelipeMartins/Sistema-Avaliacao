@@ -12,7 +12,7 @@ const normalize = (value: string) =>
 export function MenuClient({ menu }: { menu: MenuCategory[] }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<MenuProduct | null>(null);
-  const [activeId, setActiveId] = useState<number | null>(menu[0]?.id ?? null);
+  const [activeId, setActiveId] = useState<string | null>(menu[0]?.id ?? null);
   const chipsRef = useRef<HTMLDivElement>(null);
 
   const searching = query.trim().length > 0;
@@ -20,7 +20,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
   const results = useMemo(() => {
     if (!searching) return [];
     const term = normalize(query.trim());
-    const seen = new Set<number>();
+    const seen = new Set<string>();
     const found: MenuProduct[] = [];
     for (const category of menu) {
       for (const product of category.products) {
@@ -49,7 +49,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible) setActiveId(Number(visible.target.getAttribute("data-category")));
+        if (visible) setActiveId(visible.target.getAttribute("data-category"));
       },
       { rootMargin: "-140px 0px -65% 0px", threshold: 0 },
     );
@@ -64,7 +64,7 @@ export function MenuClient({ menu }: { menu: MenuCategory[] }) {
     chip?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [activeId]);
 
-  function goToCategory(id: number) {
+  function goToCategory(id: string) {
     setActiveId(id);
     const section = document.getElementById(`cat-${id}`);
     if (!section) return;

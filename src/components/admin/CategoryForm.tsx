@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { saveCategory } from "@/app/actions/admin";
 import { Icon } from "@/components/Icon";
 
-type Category = { id: number; name: string };
+type Category = { id: string; name: string };
 
 const field =
   "min-w-0 flex-1 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-cream placeholder:text-faint focus:border-flame focus:outline-none";

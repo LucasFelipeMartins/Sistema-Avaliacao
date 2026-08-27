@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { isId, prisma } from "@/lib/prisma";
 
 export type ReviewResult =
   | { ok: true; average: number; count: number }
@@ -9,13 +9,13 @@ export type ReviewResult =
 
 /** Registra (ou atualiza) a nota de 0 a 10 que o cliente deu ao lanche. */
 export async function submitReview(input: {
-  productId: number;
+  productId: string;
   rating: number;
   comment?: string;
   deviceId: string;
 }): Promise<ReviewResult> {
   const rating = Math.round(Number(input.rating));
-  const productId = Number(input.productId);
+  const productId = String(input.productId ?? "");
   const deviceId = String(input.deviceId ?? "").slice(0, 64);
   const comment = input.comment?.trim().slice(0, 280) || null;
 
@@ -25,6 +25,7 @@ export async function submitReview(input: {
   if (!deviceId) {
     return { ok: false, error: "Não foi possível identificar seu aparelho." };
   }
+  if (!isId(productId)) return { ok: false, error: "Lanche não encontrado." };
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) return { ok: false, error: "Lanche não encontrado." };

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { isId, prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/ProductForm";
 
 export const dynamic = "force-dynamic";
@@ -10,11 +10,10 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const productId = Number(id);
-  if (!Number.isInteger(productId)) notFound();
+  if (!isId(id)) notFound();
 
   const [product, categories] = await Promise.all([
-    prisma.product.findUnique({ where: { id: productId } }),
+    prisma.product.findUnique({ where: { id } }),
     prisma.category.findMany({ orderBy: [{ position: "asc" }, { name: "asc" }] }),
   ]);
 

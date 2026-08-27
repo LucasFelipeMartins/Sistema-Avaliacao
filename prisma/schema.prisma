@@ -1,19 +1,19 @@
 // Cardápio Digital + Avaliações — uma instalação por estabelecimento.
-// Banco SQLite local: cada cliente que compra o sistema roda seu próprio banco.
+// Banco MongoDB próprio: cada cliente que compra o sistema roda o seu.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 /// Dados do estabelecimento + credenciais do painel admin.
-/// Sempre existe uma única linha (id = 1).
+/// Sempre existe uma única linha, com _id fixo — veja STORE_ID em src/lib/store.ts.
 model Store {
-  id           Int      @id @default(1)
+  id           String   @id @map("_id")
   name         String   @default("Minha Hamburgueria")
   tagline      String   @default("O melhor lanche da cidade")
   logoUrl      String?
@@ -30,14 +30,14 @@ model Store {
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
+  id       String    @id @default(auto()) @map("_id") @db.ObjectId
   name     String    @unique
   position Int       @default(0)
   products Product[]
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   ingredients String    @default("")
   priceCents  Int       @default(0)
@@ -45,7 +45,7 @@ model Product {
   available   Boolean   @default(true)
   featured    Boolean   @default(false)
   position    Int       @default(0)
-  categoryId  Int?
+  categoryId  String?   @db.ObjectId
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   reviews     Review[]
   createdAt   DateTime  @default(now())
@@ -57,8 +57,8 @@ model Product {
 /// Nota de 0 a 10 dada pelo cliente. Um voto por aparelho por lanche
 /// (o cliente pode trocar a própria nota, mas não votar duas vezes).
 model Review {
-  id        Int      @id @default(autoincrement())
-  productId Int
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   rating    Int
   comment   String?
@@ -71,15 +71,16 @@ model Review {
 }
 
 /// Sessão do painel admin (token aleatório guardado em cookie httpOnly).
+/// O próprio hash do token é o _id — não precisa de ObjectId.
 model Session {
-  tokenHash String   @id
+  tokenHash String   @id @map("_id")
   createdAt DateTime @default(now())
   expiresAt DateTime
 }
 
 /// Token de recuperação de senha enviado por e-mail.
 model PasswordReset {
-  tokenHash String    @id
+  tokenHash String    @id @map("_id")
   createdAt DateTime  @default(now())
   expiresAt DateTime
   usedAt    DateTime?

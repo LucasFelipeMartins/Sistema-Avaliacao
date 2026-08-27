@@ -1,20 +1,25 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 
+// Seções que não vêm de uma Category do banco: o carrossel de destaques e a
+// sobra de lanches sem categoria. Ids em texto para conviverem com os ObjectId.
+export const FEATURED_ID = "destaques";
+export const UNCATEGORIZED_ID = "outros";
+
 export type MenuProduct = {
-  id: number;
+  id: string;
   name: string;
   ingredients: string;
   priceCents: number;
   imageUrl: string | null;
   featured: boolean;
-  categoryId: number | null;
+  categoryId: string | null;
   average: number | null;
   reviewCount: number;
 };
 
 export type MenuCategory = {
-  id: number;
+  id: string;
   name: string;
   featured: boolean;
   products: MenuProduct[];
@@ -67,7 +72,7 @@ export async function getMenu(): Promise<MenuCategory[]> {
   // "Mais pedidos" é uma vitrine: reúne os destaques marcados no painel.
   const featured = products.filter((product) => product.featured).map(decorate);
   if (featured.length > 0) {
-    menu.push({ id: -1, name: "Mais pedidos", featured: true, products: featured });
+    menu.push({ id: FEATURED_ID, name: "Mais pedidos", featured: true, products: featured });
   }
 
   for (const category of categories) {
@@ -83,7 +88,12 @@ export async function getMenu(): Promise<MenuCategory[]> {
 
   const uncategorized = products.filter((product) => product.categoryId === null);
   if (uncategorized.length > 0) {
-    menu.push({ id: 0, name: "Outros", featured: false, products: uncategorized.map(decorate) });
+    menu.push({
+      id: UNCATEGORIZED_ID,
+      name: "Outros",
+      featured: false,
+      products: uncategorized.map(decorate),
+    });
   }
 
   return menu;

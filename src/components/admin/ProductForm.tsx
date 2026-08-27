@@ -7,15 +7,15 @@ import { saveProduct } from "@/app/actions/admin";
 import { Icon } from "@/components/Icon";
 import { Alert, Field, SubmitButton, inputClass } from "@/components/admin/Field";
 
-type Category = { id: number; name: string };
+type Category = { id: string; name: string };
 
 type ProductInput = {
-  id: number;
+  id: string;
   name: string;
   ingredients: string;
   priceCents: number;
   imageUrl: string | null;
-  categoryId: number | null;
+  categoryId: string | null;
   available: boolean;
   featured: boolean;
 };

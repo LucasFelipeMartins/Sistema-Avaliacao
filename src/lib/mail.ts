@@ -8,16 +8,23 @@ type Mail = { to: string; subject: string; text: string; html: string };
 
 /**
  * Envia por SMTP quando SMTP_HOST está configurado.
- * Sem SMTP (instalação nova / ambiente local) grava em .mail-dev.log,
- * assim a recuperação de senha continua utilizável durante os testes.
+ * Sem SMTP (instalação nova / ambiente local) grava em .mail-dev.log e, onde
+ * o disco é somente leitura, no log do servidor — assim a recuperação
+ * de senha continua utilizável durante os testes.
  */
 export async function sendMail({ to, subject, text, html }: Mail) {
   const host = process.env.SMTP_HOST?.trim();
 
   if (!host) {
     const entry = `\n=== ${new Date().toISOString()} ===\nPara: ${to}\nAssunto: ${subject}\n\n${text}\n`;
-    await appendFile(DEV_LOG, entry, "utf8");
-    console.log(`[mail] SMTP não configurado — mensagem gravada em ${DEV_LOG}`);
+    try {
+      await appendFile(DEV_LOG, entry, "utf8");
+      console.log(`[mail] SMTP não configurado — mensagem gravada em ${DEV_LOG}`);
+    } catch {
+      // Na Vercel o disco é somente leitura: o link cai no log do servidor,
+      // que o dono abre pelo painel da Vercel.
+      console.log(`[mail] SMTP não configurado — mensagem não enviada:${entry}`);
+    }
     return { delivered: false as const };
   }
 

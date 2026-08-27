@@ -7,6 +7,9 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+// Mesmo _id fixo de src/lib/store.ts: a instalação tem uma única loja.
+const STORE_ID = "loja";
+
 const CATEGORIES = [
   { name: "Hambúrgueres", position: 0 },
   { name: "Porções", position: 1 },
@@ -88,10 +91,10 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD || "mudar123";
 
   const store = await prisma.store.upsert({
-    where: { id: 1 },
+    where: { id: STORE_ID },
     update: {},
     create: {
-      id: 1,
+      id: STORE_ID,
       name: "Burger House",
       tagline: "Artesanal, na brasa, do jeito que você gosta",
       adminEmail: email,

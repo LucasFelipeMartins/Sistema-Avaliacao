@@ -3,7 +3,8 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000?logo=vercel&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 
 Sistema de cardápio por QR Code para hamburguerias, com **notas de 0 a 10 dadas pelos
@@ -20,19 +21,28 @@ cópia, com o próprio banco de dados e a própria senha. Nada é compartilhado 
 
 ## Como rodar
 
-Requisitos: **Node.js 20+**.
+Requisitos: **Node.js 20+** e um banco **MongoDB**. O jeito mais rápido de ter um é o
+[MongoDB Atlas](https://www.mongodb.com/cloud/atlas), que tem plano gratuito.
 
 ```bash
 npm install
 ```
 
-Crie o arquivo de ambiente a partir do exemplo e ajuste os valores:
+Crie o arquivo de ambiente a partir do exemplo:
 
 ```bash
 cp .env.example .env
 ```
 
-Crie o banco e o acesso inicial do painel:
+No Atlas, vá em **Connect → Drivers**, copie a string de conexão e cole no `DATABASE_URL`
+do `.env`, trocando a senha e **incluindo o nome do banco depois da barra** — sem ele o
+Prisma não sobe:
+
+```env
+DATABASE_URL="mongodb+srv://usuario:senha@cluster0.xxxxx.mongodb.net/cardapio?retryWrites=true&w=majority"
+```
+
+Crie as coleções e o acesso inicial do painel:
 
 ```bash
 npm run db:push
@@ -100,29 +110,74 @@ SMTP_PASS="a-senha-do-e-mail"
 SMTP_FROM="Cardapio Digital <contato@hamburgueria.com.br>"
 ```
 
-Sem SMTP configurado o sistema não quebra: o link é gravado em `.mail-dev.log`, o que serve
-para testar tudo antes de colocar no ar.
+Sem SMTP configurado o sistema não quebra: no computador o link é gravado em
+`.mail-dev.log` e, onde o disco é somente leitura (Vercel), ele aparece no log do
+servidor — dá para testar tudo antes de colocar no ar.
 
 ---
 
-## Colocar no ar
+## Colocar no ar na Vercel
 
-1. Aponte um domínio para o servidor (ex.: `cardapio.suahamburgueria.com.br`).
-2. No `.env` do servidor, ajuste `APP_URL` para esse endereço.
-3. Rode `npm run build` e depois `npm start`.
-4. No painel, em **Configurações → Endereço do cardápio**, coloque o mesmo endereço.
-5. Vá em **QR Code**, imprima e distribua nas mesas.
+### 1. Banco no MongoDB Atlas
+
+1. Crie um cluster (o gratuito M0 dá conta de uma hamburgueria).
+2. Em **Database Access**, crie um usuário com senha.
+3. Em **Network Access**, libere `0.0.0.0/0`. Os endereços da Vercel são dinâmicos, então
+   não há uma faixa fixa para autorizar — a proteção fica por conta do usuário e da senha.
+4. Em **Connect → Drivers**, copie a string de conexão e acrescente o nome do banco.
+
+### 2. Projeto na Vercel
+
+1. Suba o repositório no GitHub e importe em **Add New → Project**. A Vercel reconhece o
+   Next.js sozinha; não mexa no comando de build.
+2. Em **Storage**, crie um **Blob Store** e conecte ao projeto. É onde ficam as fotos dos
+   lanches — a `BLOB_READ_WRITE_TOKEN` entra sozinha nas variáveis.
+3. Em **Settings → Environment Variables**, preencha:
+
+| Variável | Valor |
+| --- | --- |
+| `DATABASE_URL` | a string do Atlas, com o nome do banco |
+| `APP_URL` | o endereço público (ex.: `https://cardapio-da-loja.vercel.app`) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | dados do e-mail |
+
+`ADMIN_EMAIL` e `ADMIN_PASSWORD` **não precisam ir para a Vercel** — servem só ao
+`db:seed`, que roda da sua máquina.
+
+### 3. Primeiro deploy
+
+Só se sabe o endereço final depois do primeiro deploy. Então: publique, copie a URL,
+coloque em `APP_URL` e mande republicar (**Deployments → Redeploy**).
+
+### 4. Popular o banco
+
+Como o banco é o mesmo do Atlas, dá para preparar tudo da sua máquina — basta o `.env`
+local apontar para ele:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+### 5. QR Code
+
+No painel, em **Configurações → Endereço do cardápio**, coloque o endereço público. Depois
+vá em **QR Code**, imprima e distribua nas mesas.
 
 > ⚠️ O QR Code precisa apontar para o endereço público. Se ele apontar para `localhost`,
 > só funciona no seu computador.
 
-### O que preservar em cada atualização
+### Detalhes que costumam pegar
 
-- `prisma/dev.db` — o banco com cardápio e avaliações
-- `public/uploads/` — as fotos dos lanches
-- `.env` — as configurações da instalação
-
-Faça uma cópia desses três antes de qualquer atualização.
+- **Foto de até 4 MB.** A Vercel recusa requisições acima de 4,5 MB antes de elas chegarem
+  no sistema, então o painel avisa quando a imagem passa disso.
+- **Reordenar lanches exige replica set.** Subir e descer item usa transação, o que o
+  MongoDB só aceita em replica set. Todo cluster do Atlas já é um; um `mongod` avulso
+  instalado na mão, não.
+- **SMTP em servidor serverless** funciona, mas é lento e alguns provedores bloqueiam. Se
+  virar dor de cabeça, trocar o `nodemailer` por uma API HTTP de e-mail mexe só em
+  `src/lib/mail.ts`.
+- **Backup** é responsabilidade do Atlas (snapshots no painel dele) e do Blob. Não há mais
+  arquivo de banco para copiar à mão.
 
 ---
 
@@ -130,10 +185,10 @@ Faça uma cópia desses três antes de qualquer atualização.
 
 Cada venda é uma instalação limpa:
 
-1. Copie o projeto (sem `prisma/dev.db` e sem `public/uploads/`).
-2. Crie o `.env` com o `ADMIN_EMAIL` e o `ADMIN_PASSWORD` do novo dono.
-3. Rode `npm run db:push` e `npm run db:seed`.
-4. Entregue o acesso — o dono ajusta nome, logo, cores de identidade e cardápio pelo painel.
+1. Crie um banco novo no Atlas e um projeto novo na Vercel, com o próprio Blob Store.
+2. Configure as variáveis de ambiente com o `ADMIN_EMAIL` e o `ADMIN_PASSWORD` do novo dono.
+3. Rode `npm run db:push` e `npm run db:seed` apontando para o banco novo.
+4. Entregue o acesso — o dono ajusta nome, logo, cardápio e endereço pelo painel.
 
 Como cada instalação tem banco próprio, os dados de um estabelecimento nunca encostam nos
 de outro.
@@ -144,7 +199,8 @@ de outro.
 
 - **Next.js 16** (App Router, Server Actions) + **React 19** + **TypeScript**
 - **Tailwind CSS 4** com tema preto / laranja / branco
-- **Prisma 6** + **SQLite** (um banco por instalação)
+- **Prisma 6** + **MongoDB** (um banco por instalação)
+- **Vercel Blob** nas fotos, com queda para `public/uploads/` quando não há token
 - **framer-motion** nas animações, **qrcode** no cartão de mesa, **nodemailer** no e-mail
 - Sessão em cookie `httpOnly` com token no banco; senha com **bcrypt**
 

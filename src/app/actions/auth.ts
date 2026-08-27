@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { appUrl, getStore } from "@/lib/store";
+import { STORE_ID, appUrl, getStore } from "@/lib/store";
 import { passwordResetTemplate, sendMail } from "@/lib/mail";
 import {
   consumePasswordReset,
@@ -110,7 +110,7 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
   if (!valid) return { error: "Link inválido ou expirado. Peça um novo." };
 
   await prisma.store.update({
-    where: { id: 1 },
+    where: { id: STORE_ID },
     data: { passwordHash: await hashPassword(password) },
   });
   await destroyAllSessions();
@@ -135,7 +135,7 @@ export async function changePassword(_prev: FormState, formData: FormData): Prom
   if (password !== confirm) return { error: "As senhas não são iguais." };
 
   await prisma.store.update({
-    where: { id: 1 },
+    where: { id: STORE_ID },
     data: { passwordHash: await hashPassword(password) },
   });
 

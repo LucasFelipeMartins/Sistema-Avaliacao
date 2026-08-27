@@ -13,13 +13,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 # Cardápio Digital — notas do projeto
 
 Cardápio por QR Code com avaliações de 0 a 10, para hamburguerias.
-**Uma instalação por estabelecimento** — banco SQLite próprio, senha própria, sem multi-tenant.
-Nunca introduza `storeId` nas consultas: existe uma única `Store` (id = 1).
+**Uma instalação por estabelecimento** — banco MongoDB próprio, senha própria, sem multi-tenant.
+Nunca introduza `storeId` nas consultas: existe uma única `Store`, de `_id` fixo
+(`STORE_ID` em `src/lib/store.ts`).
 
 ## Comandos
 
 - `npm run dev` — sobe o app
-- `npm run db:push` — aplica o schema no SQLite
+- `npm run db:push` — aplica o schema no MongoDB (o Prisma não tem `migrate` para Mongo)
 - `npm run db:seed` — cria a loja, o acesso do painel e o cardápio de exemplo
 - `npm run build` / `npm run lint`
 
@@ -32,7 +33,8 @@ Nunca introduza `storeId` nas consultas: existe uma única `Store` (id = 1).
 - Sem middleware de auth: a proteção é o layout do grupo `(painel)` (Prisma não roda no edge runtime).
 - Após mudar dados do cardápio, chame `revalidatePath("/")` — a página pública é `force-dynamic`, mas o painel também lê essas rotas.
 - **Um voto por aparelho por lanche**: `@@unique([productId, deviceId])` + `upsert`. O `deviceId` é um UUID no `localStorage` (`src/lib/device.ts`), não há login de cliente.
-- Uploads vão para `public/uploads/` via `src/lib/upload.ts`, que também apaga o arquivo antigo ao trocar a foto.
+- Fotos: com `BLOB_READ_WRITE_TOKEN` vão para o Vercel Blob; sem token, para `public/uploads/`. `src/lib/upload.ts` cuida dos dois casos e apaga o arquivo antigo ao trocar a foto. Teto de 4 MB — a Vercel recusa corpos acima de 4,5 MB.
+- **Ids são ObjectId** (texto de 24 hex), não número. Todo id vindo de URL ou de formulário passa por `isId()` (`src/lib/prisma.ts`) antes de virar consulta: id malformado derruba o Prisma.
 
 ## Interface
 
